@@ -13,7 +13,9 @@ def runge_kutta_step(f, x0, dt, t=None):
     k2 = f(t, x0 + k1 / 2) * dt
     k3 = f(t, x0 + k2 / 2) * dt
     k4 = f(t, x0 + k3) * dt
-    x_new = x0 + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+    # workaround for a pypy bug
+    #x_new = x0 + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+    x_new = x0 + (k1 + (k2 * 2) + (k3 * 2) + k4) / 6
     return x_new
 
 

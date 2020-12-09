@@ -25,3 +25,6 @@ profile: tmp.py
 	# with gprof2dot and graphviz (command dot)
 	gprof2dot -f pstats tmp.pstats | dot -Tpng -o tmp_$(METHOD).png
 	eog tmp_$(METHOD).png
+
+bench_hpy:
+	$(PYTHON) bench_cpy_vs_hpy.py

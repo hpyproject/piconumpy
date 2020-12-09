@@ -3,13 +3,20 @@ dist: bionic
 language: julia
 
 before_install:
+  - pwd
   - sudo apt-get update
   - sudo apt-get -y install python3-virtualenv
   - python3 -m virtualenv myenv -p python3
+  - . myenv/bin/activate
+  - pip install numpy cython pytest transonic pythran
+  - git clone -b master --single-branch https://github.com/hpyproject/hpy
+  - cd hpy
+  - git checkout 7c832a2
+  - python setup.py develop
+  - cd $HOME/build/paugier/piconumpy
 
 install:
-  - . myenv/bin/activate
-  - pip install -e .[dev]
+  - make
 
 script:
   - pytest piconumpy

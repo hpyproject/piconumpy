@@ -2,6 +2,9 @@ import sys
 import time
 import random
 from math import pi, cos, sin
+from pathlib import Path
+
+here = Path(__file__).absolute().parent
 
 def my_randn(mod, n):
     result = mod.empty(n)
@@ -80,7 +83,7 @@ def import_piconumpy_hpy_universal():
     import hpy.universal
     class spec:
         name = '_piconumpy_hpy'
-        origin = 'piconumpy/_piconumpy_hpy.hpy.so'
+        origin = str(here.parent / 'piconumpy/_piconumpy_hpy.hpy.so')
     return hpy.universal.load_from_spec(spec)
 
 def main():
@@ -89,17 +92,15 @@ def main():
     t = bench(pnp_capi, N_SLEDS, N_TIME)
     print(f'CPython C-API:   {t:.2f} seconds')
 
-    pnp_hpy_universal = import_piconumpy_hpy_universal()
-    t = bench(pnp_hpy_universal, N_SLEDS, N_TIME)
-    print(f'HPy [Universal]: {t:.2f} seconds')
-
     if not IS_PYPY:
         import piconumpy._piconumpy_hpy as pnp_hpy
         t = bench(pnp_hpy, N_SLEDS, N_TIME)
         print(f'HPy [CPy ABI]:   {t:.2f} seconds')
 
+    pnp_hpy_universal = import_piconumpy_hpy_universal()
+    t = bench(pnp_hpy_universal, N_SLEDS, N_TIME)
+    print(f'HPy [Universal]: {t:.2f} seconds')
 
 
 if __name__ == '__main__':
     main()
-

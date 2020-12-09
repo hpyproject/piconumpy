@@ -20,8 +20,8 @@ static int Array_init_impl(HPyContext ctx, HPy h_self, HPy *args,
   ArrayObject *self = HPy_CAST(ctx, ArrayObject, h_self);
   int index;
   HPy h_data = HPy_NULL;
-
-  if (!HPyArg_ParseKeywords(ctx, args, nargs, kw, "|O", kwlist, &h_data))
+  HPyTracker ht;
+  if (!HPyArg_ParseKeywords(ctx, &ht, args, nargs, kw, "|O", kwlist, &h_data))
     return -1;
 
   if (!HPyList_Check(ctx, h_data)) {
