@@ -2,6 +2,7 @@
 *.egg-info/*
 */__pycache__/*
 build
+.eggs
 
 *.so
 .vscode

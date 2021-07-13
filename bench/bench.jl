@@ -13,7 +13,6 @@ function board(X_0::Array, b::Float64)
     p = (2*π)/10.0
     q = (2*π)/4.0
 
-    H = -a*x0 - b*cos(p*x0)*cos(q*y0)
     H_x = -a + b*p*sin(p*x0)*cos(q*y0)
     H_xx = b*p^2 * cos(p*x0)*cos(q*y0)
     H_y = b*q*cos(p*x0)*sin(q*y0)

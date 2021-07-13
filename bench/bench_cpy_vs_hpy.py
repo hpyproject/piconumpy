@@ -2,6 +2,10 @@ import sys
 import time
 import random
 from math import pi, cos, sin
+from pathlib import Path
+
+here = Path(__file__).absolute().parent
+
 
 def my_randn(mod, n):
     result = mod.empty(n)
@@ -9,7 +13,9 @@ def my_randn(mod, n):
         result[i] = random.normalvariate(0, 1)
     return result
 
-IS_PYPY = hasattr(sys, 'pypy_version_info')
+
+IS_PYPY = hasattr(sys, "pypy_version_info")
+
 
 def runge_kutta_step(mod, f, x0, dt, t=None):
     k1 = f(mod, t, x0) * dt
@@ -17,12 +23,12 @@ def runge_kutta_step(mod, f, x0, dt, t=None):
     k3 = f(mod, t, x0 + k2 / 2) * dt
     k4 = f(mod, t, x0 + k3) * dt
     # workaround for a pypy bug
-    #x_new = x0 + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+    # x_new = x0 + (k1 + 2 * k2 + 2 * k3 + k4) / 6
     x_new = x0 + (k1 + (k2 * 2) + (k3 * 2) + k4) / 6
     return x_new
 
 
-def board(mod,t, X_0):
+def board(mod, t, X_0):
     x0 = X_0[0]
     y0 = X_0[1]
     u0 = X_0[2]
@@ -71,7 +77,7 @@ def bench(mod, n_sleds, n_time):
     start = time.time()
     solver(mod, board, x_init, y_init, u_init, v_init, 0.01, n_time)
     end = time.time()
-    return end-start
+    return end - start
 
 
 N_SLEDS = 100
@@ -80,25 +86,29 @@ N_TIME = 2000
 
 def import_piconumpy_hpy_universal():
     import hpy.universal
+
     return hpy.universal.load(
-        '_piconumpy_hpy', 'piconumpy/_piconumpy_hpy.hpy.so')
+        "_piconumpy_hpy", str(here.parent / "piconumpy/_piconumpy_hpy.hpy.so")
+    )
 
 
 def main():
 
     import piconumpy._piconumpy_cpython_capi as pnp_capi
+
     t = bench(pnp_capi, N_SLEDS, N_TIME)
-    print(f'CPython C-API:   {t:.2f} seconds')
+    print(f"CPython C-API:   {t:.2f} seconds")
 
     pnp_hpy_universal = import_piconumpy_hpy_universal()
     t = bench(pnp_hpy_universal, N_SLEDS, N_TIME)
-    print(f'HPy [Universal]: {t:.2f} seconds')
+    print(f"HPy [Universal]: {t:.2f} seconds")
 
     if not IS_PYPY:
         import piconumpy._piconumpy_hpy as pnp_hpy
+
         t = bench(pnp_hpy, N_SLEDS, N_TIME)
-        print(f'HPy [CPy ABI]:   {t:.2f} seconds')
+        print(f"HPy [CPy ABI]:   {t:.2f} seconds")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

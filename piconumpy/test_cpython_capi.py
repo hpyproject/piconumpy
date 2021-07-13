@@ -11,12 +11,12 @@ class Tests:
 
     def test_empty(self):
         a = self.piconumpy.empty(12)
-        assert type(a) is self.piconumpy.array
+        assert isinstance(a, self.piconumpy.array)
         assert a.size == 12
 
     def test_zeros(self):
         a = self.piconumpy.zeros(5)
-        assert type(a) is self.piconumpy.array
+        assert isinstance(a, self.piconumpy.array)
         assert a.size == 5
         assert a.tolist() == [0, 0, 0, 0, 0]
 
@@ -46,11 +46,16 @@ class Tests:
 
     def test_multiply(self):
         a = self._array([1.0, 2.0])
-        assert (2 * a).tolist() == [2.0, 4.0]
+        # works with PyPy 7.3.6-alpha0
         assert (a * 3).tolist() == [3.0, 6.0]
+        # error with PyPy 7.3.6-alpha0
+        assert (2 * a).tolist() == [2.0, 4.0]
 
     def test_add(self):
         a = self._array([1.0, 2.0])
+        # works with PyPy 7.3.6-alpha0
+        assert (a + a * 2).tolist() == [3.0, 6.0]
+        # error with PyPy 7.3.6-alpha0
         assert (a + 2 * a).tolist() == [3.0, 6.0]
 
     def test_divide(self):

@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/paugier/piconumpy.svg?branch=master)](https://travis-ci.org/paugier/piconumpy)
 
-**An experiment about Numpy and pyhandle/hpy**
+**An experiment about Numpy and HPy**
 
 The C API of CPython is one of the cause of the success of Python in scientific
 computing. In particular, Numpy (and all the Python scientific stack) is built
@@ -11,7 +11,7 @@ issue for the future of scientific Python (see [1], [2], [HPy]).
 
 [1]: https://faster-cpython.readthedocs.io/
 [2]: https://morepypy.blogspot.com/2019/12/hpy-kick-off-sprint-report.html
-[HPy]: https://github.com/pyhandle/hpy
+[HPy]: https://github.com/hpyproject/hpy
 
 [HPy] is a very ambitious and promissing project to design a new and better C
 API for interacting with Python interpreters. It should allow people to write
@@ -60,6 +60,11 @@ such codes using Numpy).
 
 ## Install and run the benchmarks
 
+**Warning:** PicoNumpy now depends on HPy, which still has to be installed from
+the [Git repository](https://github.com/hpyproject/hpy). For now, the
+installation is a bit more complex that what is described here (more about this
+[here](#more-precise-notes-on-how-to-install-and-run-the-benchmarks-with-PyPy)).
+
 `make` should install the package in editable mode. `cd bench; make` should run
 the benchmarks. For the benchmarks, Julia is used for a good comparison point
 so the command `julia` has to be available.
@@ -85,106 +90,97 @@ make profile METHOD="purepy"
 make profile METHOD="cython"
 ```
 
+### More precise notes on how to install and run the benchmarks with PyPy
+
+Download and extract a nightly PyPy build
+<https://buildbot.pypy.org/nightly/>. Add to the `PATH` environment variable
+the path of the directory containing the `pypy` executable (something like
+`~/opt/pypy-c-jit-101190-b661dc329618-linux64/bin`). Then, you should be able
+to run:
+
+```bash
+pypy -m ensurepip
+pypy -m pip install pip -U
+pypy -m pip install numpy cython pytest transonic pythran
+```
+
+We need to install the correct version of HPy for the version of PyPy we are using:
+
+```bash
+pypy -c "import hpy.universal as u; print(u.get_version())"
+```
+
+gives `('0.0.2rc2.dev12+gc9660c2', 'c9660c2')`.
+
+```bash
+cd ~/Dev/hpy
+# update to the correct commit
+pypy setup.py develop
+```
+
+Now we can build-install PicoNumpy:
+
+```bash
+cd ~/Dev/piconumpy
+pypy setup.py --hpy-abi=universal develop
+```
+
+And run the benchmarks with:
+
+```bash
+export PYTHON="pypy"
+make clean
+make bench_hpy
+make
+```
+
 ## Few results
 
-As of today (5 March 2020), HPy is not yet ready!
-
-### At work (meige8pcpa79, Intel(R) Xeon(R) CPU E5-1603 v3 @ 2.80GHz)
-
-- With CPython
-
-```raw
-Julia                      :     1 * norm = 0.00534 s
-Transonic-Pythran          : 0.564 * norm
-Numpy                      :  18.2 * norm
-PicoNumpy (purepy)         :  23.7 * norm
-PicoNumpy (purepy_array)   :  21.7 * norm
-PicoNumpy (Cython)         :  15.6 * norm
-PicoNumpy (CPython C-API)  :   4.7 * norm
-```
-
-- With PyPy3
-
-```raw
-Julia                      :     1 * norm = 0.00534 s
-Transonic-Pythran          : 0.603 * norm
-Numpy                      :   183 * norm
-PicoNumpy (purepy)         :   2.4 * norm
-PicoNumpy (purepy_array)   :  3.73 * norm
-PicoNumpy (Cython)         :   135 * norm
-PicoNumpy (CPython C-API)  :  17.8 * norm
-```
+As of today (6 July 2021), HPy is not yet ready for high performance, but at
+least (with HPy 0.0.2) it runs !
 
 ### At home (Intel(R) Core(TM) i5-8400 CPU @ 2.80GHz)
 
 - With CPython
 
-```raw
-Julia                      :     1 * norm = 0.00176 s
-Transonic-Pythran          :  0.73 * norm
-Numpy                      :  37.6 * norm
-PicoNumpy (purepy)         :  46.4 * norm
-PicoNumpy (purepy_array)   :  41.9 * norm
-PicoNumpy (Cython)         :  31.4 * norm
-PicoNumpy (CPython C-API)  :  9.22 * norm
+```
+Julia                      :     1 * norm = 0.00196 s
+PicoNumpy (CPython C-API)  :  9.42 * norm
+PicoNumpy (HPy CPy ABI)    :  9.95 * norm
+PicoNumpy (HPy Universal)  :  10.4 * norm
+Transonic-Pythran          : 0.497 * norm
+Numpy                      :  27.5 * norm
+PicoNumpy (purepy)         :  37.3 * norm
+PicoNumpy (purepy_array)   :  37.7 * norm
+PicoNumpy (Cython)         :  28.9 * norm
 ```
 
 - With PyPy3
 
-```raw
-Julia                      :     1 * norm = 0.00176 s
-Transonic-Pythran          : 0.797 * norm
-Numpy                      :   326 * norm
-PicoNumpy (purepy)         :  4.71 * norm
-PicoNumpy (purepy_array)   :  7.48 * norm
-PicoNumpy (Cython)         :   243 * norm
-PicoNumpy (CPython C-API)  :  36.6 * norm
+```
+Julia                      :     1 * norm = 0.00196 s
+PicoNumpy (CPython C-API)  :  34.1 * norm
+PicoNumpy (HPy Universal)  :  12.8 * norm
+Transonic-Pythran          : 0.539 * norm
+Numpy                      :   232 * norm
+PicoNumpy (purepy)         :  4.39 * norm
+PicoNumpy (purepy_array)   :  6.33 * norm
+PicoNumpy (Cython)         :   274 * norm
 ```
 
-## CPython C-API usage in PicoNumpy
+#### Simpler benchmarks (bench/bench_cpy_vs_hpy.py)
 
-It is the first time that I wrote a Python extension by hand (without Cython or
-Pythran) and moreover, there are nearly no checks and I didn't pay attention to
-reference counting!
+- With CPython
 
-List obtained from `grep -rwoh 'Py[_A-Z].[a-zA-Z_]*' | sort | uniq`:
+```
+CPython C-API:   1.92 seconds
+HPy [Universal]: 2.08 seconds
+HPy [CPy ABI]:   2.02 seconds
+```
 
-```raw
-PyArg_ParseTupleAndKeywords
-PyCFunction
-Py_DECREF
-PyErr_NoMemory
-PyErr_SetString
-PyExc_TypeError
-PyFloat_AsDouble
-PyFloat_FromDouble
-PyFloatObject
-Py_INCREF
-PyList_Check
-PyList_GET_ITEM
-PyList_New
-PyList_SetItem
-PyList_Size
-PyLong_AsLong
-PyMemberDef
-PyMethodDef
-PyMODINIT_FUNC
-PyModule_AddObject
-PyModule_Create
-PyModuleDef
-PyModuleDef_HEAD_INIT
-PyNumber_Check
-PyNumberMethods
-PyObject
-PyObject_HEAD
-PyObject_New
-PySequenceMethods
-Py_ssize_t
-Py_TPFLAGS_DEFAULT
-Py_TYPE
-PyType_GenericNew
-PyTypeObject
-PyType_Ready
-Py_UNUSED
-PyVarObject_HEAD_INIT
+- With PyPy3
+
+```
+CPython C-API:   5.75 seconds
+HPy [Universal]: 2.11 seconds
 ```
