@@ -10,7 +10,7 @@ setup(
         "full": ["black"],
     },
     # you need to manually install hpy.devel from the git repo for now
-    setup_requires=['hpy.devel>0.0'],
+    setup_requires=['hpy'],
     ext_modules=[
         Extension(
             "piconumpy._piconumpy_cpython_capi",
