@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 from .util_hpy import import_ext
@@ -15,3 +17,15 @@ except ImportError:
 )
 class TestsCPyABI(_Tests):
     piconumpy = piconumpy_universal
+
+    def test_multiply(self):
+        if sys.implementation.name == "pypy":
+            pytest.xfail("Expected failure with PyPy (but should work)")
+
+        super().test_multiply()
+
+    def test_add(self):
+        if sys.implementation.name == "pypy":
+            pytest.xfail("Expected failure with PyPy (but should work)")
+
+        super().test_add()

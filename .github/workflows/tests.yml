@@ -8,7 +8,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9, pypy-3.7-nightly]
 
     steps:
 
@@ -22,12 +22,15 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - if: startsWith(matrix.python-version, 'pypy') != true
+      name: Install HPy (only for CPython)
+      run: |
+        git clone -b release/0.0.3 --single-branch https://github.com/hpyproject/hpy
+        cd hpy
+        pip install .
+
     - name: Install dependencies
       run: |
-        git clone -b master --single-branch https://github.com/hpyproject/hpy
-        cd hpy
-        git checkout 7b45ce522
-        pip install .
         pip install numpy cython pytest transonic pythran
 
     - name: Checkout
@@ -39,13 +42,17 @@ jobs:
       run: |
         python setup.py develop
         python setup.py --hpy-abi=universal develop
+        rm -f piconumpy/_piconumpy_hpy.py
 
     - name: Run tests
       run: |
-        pytest -s
+        pytest -v
 
     - name: Run bench
       run: |
         cd bench
+        make tmp_result_julia.txt
         make bench_hpy
         make
+        # let's rerun bench_hpy to get these results also at the end
+        make bench_hpy

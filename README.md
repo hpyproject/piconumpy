@@ -104,19 +104,13 @@ pypy -m pip install pip -U
 pypy -m pip install numpy cython pytest transonic pythran
 ```
 
-We need to install the correct version of HPy for the version of PyPy we are using:
+One can check which HPy version is vendored with PyPy:
 
 ```bash
 pypy -c "import hpy.universal as u; print(u.get_version())"
 ```
 
-gives `('0.0.2rc2.dev12+gc9660c2', 'c9660c2')`.
-
-```bash
-cd ~/Dev/hpy
-# update to the correct commit
-pypy setup.py develop
-```
+gives `('0.0.3', '2196f14')`.
 
 Now we can build-install PicoNumpy:
 
@@ -136,36 +130,36 @@ make
 
 ## Few results
 
-As of today (6 July 2021), HPy is not yet ready for high performance, but at
-least (with HPy 0.0.2) it runs !
+As of today (12 October 2021), HPy is not yet ready for high performance, but at
+least (with HPy 0.0.3) it runs !
 
 ### At home (Intel(R) Core(TM) i5-8400 CPU @ 2.80GHz)
 
 - With CPython
 
 ```
-Julia                      :     1 * norm = 0.00196 s
-PicoNumpy (CPython C-API)  :  9.42 * norm
-PicoNumpy (HPy CPy ABI)    :  9.95 * norm
-PicoNumpy (HPy Universal)  :  10.4 * norm
-Transonic-Pythran          : 0.497 * norm
-Numpy                      :  27.5 * norm
-PicoNumpy (purepy)         :  37.3 * norm
-PicoNumpy (purepy_array)   :  37.7 * norm
-PicoNumpy (Cython)         :  28.9 * norm
+Julia                      :     1 * norm = 0.0171 s
+PicoNumpy (CPython C-API)  :  11.1 * norm
+PicoNumpy (HPy CPy ABI)    :  11.6 * norm
+PicoNumpy (HPy Universal)  :  12.1 * norm
+Transonic-Pythran          : 0.537 * norm
+Numpy                      :  33.8 * norm
+PicoNumpy (purepy)         :  43.7 * norm
+PicoNumpy (purepy_array)   :  44.8 * norm
+PicoNumpy (Cython)         :  33.9 * norm
 ```
 
 - With PyPy3
 
 ```
-Julia                      :     1 * norm = 0.00196 s
-PicoNumpy (CPython C-API)  :  34.1 * norm
-PicoNumpy (HPy Universal)  :  12.8 * norm
-Transonic-Pythran          : 0.539 * norm
-Numpy                      :   232 * norm
-PicoNumpy (purepy)         :  4.39 * norm
-PicoNumpy (purepy_array)   :  6.33 * norm
-PicoNumpy (Cython)         :   274 * norm
+Julia                      :     1 * norm = 0.0171 s
+PicoNumpy (CPython C-API)  :  39.2 * norm
+PicoNumpy (HPy Universal)  :  13.1 * norm
+Transonic-Pythran          : 0.562 * norm
+Numpy                      :   286 * norm
+PicoNumpy (purepy)         :  5.59 * norm
+PicoNumpy (purepy_array)   :  7.41 * norm
+PicoNumpy (Cython)         :   282 * norm
 ```
 
 #### Simpler benchmarks (bench/bench_cpy_vs_hpy.py)
@@ -173,14 +167,19 @@ PicoNumpy (Cython)         :   274 * norm
 - With CPython
 
 ```
-CPython C-API:   1.92 seconds
-HPy [Universal]: 2.08 seconds
-HPy [CPy ABI]:   2.02 seconds
+{'cache_tag': 'cpython-39',
+ 'version': sys.version_info(major=3, minor=9, micro=6, releaselevel='final', serial=0)}
+CPython C-API:   0.193 seconds (11.2 * Julia)
+HPy [Universal]: 0.208 seconds (12.1 * Julia)
+HPy [CPy ABI]:   0.201 seconds (11.7 * Julia)
 ```
 
 - With PyPy3
 
 ```
-CPython C-API:   5.75 seconds
-HPy [Universal]: 2.11 seconds
+{'cache_tag': 'pypy37',
+ 'version': sys.pypy_version_info(major=7, minor=3, micro=6, releaselevel='final', serial=0)}
+CPython C-API:   0.592 seconds (34.6 * Julia)
+HPy [Universal]: 0.207 seconds (12.1 * Julia)
+Python list:     0.093 seconds ( 5.4 * Julia)
 ```
