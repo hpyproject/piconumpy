@@ -56,7 +56,7 @@ piconumpy.cpython_capi        : 2.90e-03 s (219.1 * Julia)
 
 ## Summary
 
-- PyPy is fast with list (1.3 * Julia, same order of magnitude that with Julia)
+- PyPy is fast with list (1.3 * Julia, same order of magnitude than with Julia)
 and as fast for a piconumpy array based on a list ("piconumpy.purepy", zero
 cost abstraction!)
 

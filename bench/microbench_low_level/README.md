@@ -18,4 +18,8 @@ We measure the performance for functions containing low level Python code.
 - `instantiate` (command `make bench_instantiate`): dominated by the
   instantiation/deletion of small arrays of 4 floats.
 
+- `element_wise` (command `make bench_element_wise`): dominated by the
+  instantiation/deletion of small arrays of 4 floats and calling element-wise
+  operations.
+
 The files result_*.txt contain few results.

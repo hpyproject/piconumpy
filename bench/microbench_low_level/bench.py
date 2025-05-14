@@ -152,7 +152,7 @@ def element_wise(arr):
 compute_from_arr = locals()[name_bench]
 
 if size is None:
-    if method.startswith("sum_loop") or method == "cort":
+    if name_bench.startswith("sum_loop") or name_bench == "cort":
         size = 10000
     else:
         size = 4
