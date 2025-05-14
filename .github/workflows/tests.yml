@@ -8,43 +8,43 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.11', '3.12', 'pypy-3.11']
 
     steps:
 
     - name: Setup Julia
-      uses: julia-actions/setup-julia@v1
+      uses: julia-actions/setup-julia@v2
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        # install HPy from source if depending on a dev version
-        # git clone -b master --single-branch https://github.com/hpyproject/hpy
-        # git checkout 1234abcd
-        # cd hpy
-        # pip install .
-        pip install numpy cython pytest transonic pythran 'setuptools>=60.2' 'hpy>=0.9.0rc1'
-
     - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      uses: actions/checkout@v4
 
-    - name: build
+    - name: Build and install deps
       run: |
-        python setup.py develop
-        python setup.py --hpy-abi=universal develop
+        pip install -e .[full]
+
+    - if: startsWith(matrix.python-version, 'pypy') != true
+      name: Build universal extension (only needed for CPython)
+      run: |
+        pip install -e . --config-settings="--global-option=--hpy-abi=universal"
+
+    - name: Remove _piconumpy_hpy.py
+      run: |
+        rm -f piconumpy/_piconumpy_hpy.py
 
     - name: Run tests
       run: |
-        pytest -s
+        pytest -v
 
     - name: Run bench
       run: |
         cd bench
+        make tmp_result_julia.txt
         make bench_hpy
-        make
+        make bench_full
+        # rerun bench_hpy to get these results also at the end
+        make bench_hpy

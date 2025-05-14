@@ -1,8 +1,11 @@
-import sys
-import time
 import random
+import socket
+import sys
+
 from math import pi, cos, sin
 from pathlib import Path
+from pprint import pprint
+from time import perf_counter
 
 here = Path(__file__).absolute().parent
 
@@ -14,7 +17,7 @@ def my_randn(mod, n):
     return result
 
 
-IS_PYPY = hasattr(sys, "pypy_version_info")
+IS_CPY = sys.implementation.name == "cpython"
 
 
 def runge_kutta_step(mod, f, x0, dt, t=None):
@@ -75,14 +78,18 @@ def bench(mod, n_sleds, n_time):
     u_init = mod.zeros(n_sleds)
     for i in range(n_sleds):
         u_init[i] += 3.5
-    start = time.time()
-    solver(mod, board, x_init, y_init, u_init, v_init, 0.01, n_time)
-    end = time.time()
-    return end - start
+    times = []
+    for _ in range(20):
+        start = perf_counter()
+        solver(mod, board, x_init, y_init, u_init, v_init, 0.01, n_time)
+        times.append(perf_counter() - start)
+
+    times.sort()
+    return times[len(times) // 2]
 
 
 N_SLEDS = 100
-N_TIME = 2000
+N_TIME = 200
 
 
 def import_piconumpy_hpy_universal():
@@ -101,18 +108,48 @@ def main():
 
     import piconumpy._piconumpy_cpython_capi as pnp_capi
 
-    t = bench(pnp_capi, N_SLEDS, N_TIME)
-    print(f"CPython C-API:   {t:.2f} seconds")
+    pprint({key: sys.implementation.__dict__[key] for key in ("cache_tag", "version")})
+    print(f"hostname: {socket.gethostname()}")
+
+    tmp_result_julia = Path("tmp_result_julia.txt")
+    if tmp_result_julia.exists():
+        with open("tmp_result_julia.txt") as file:
+            norm = float(file.read())
+        end = ""
+        print(f"Julia:           {norm:.3f} seconds")
+    else:
+        norm = False
+        end = "\n"
+
+    t_capi = bench(pnp_capi, N_SLEDS, N_TIME)
+    print(f"CPython C-API:   {t_capi:.3f} seconds", end=end)
+    if norm:
+        print(f" ({t_capi/norm:4.1f} * Julia)")
 
     pnp_hpy_universal = import_piconumpy_hpy_universal()
-    t = bench(pnp_hpy_universal, N_SLEDS, N_TIME)
-    print(f"HPy [Universal]: {t:.2f} seconds")
+    t_hpy_univ = bench(pnp_hpy_universal, N_SLEDS, N_TIME)
+    print(f"HPy [Universal]: {t_hpy_univ:.3f} seconds", end=end)
 
-    if not IS_PYPY:
+    if norm:
+        print(f" ({t_hpy_univ/norm:4.1f} * Julia)")
+
+    if IS_CPY:
         import piconumpy._piconumpy_hpy as pnp_hpy
 
-        t = bench(pnp_hpy, N_SLEDS, N_TIME)
-        print(f"HPy [CPy ABI]:   {t:.2f} seconds")
+        t_hpy_cpy_abi = bench(pnp_hpy, N_SLEDS, N_TIME)
+        print(f"HPy [CPy ABI]:   {t_hpy_cpy_abi:.3f} seconds", end=end)
+
+        if norm:
+            print(f" ({t_hpy_cpy_abi/norm:4.1f} * Julia)")
+
+    if not IS_CPY:
+        import piconumpy.purepy as pnp_with_list
+
+        t_with_list = bench(pnp_with_list, N_SLEDS, N_TIME)
+        print(f"Python list:     {t_with_list:.3f} seconds", end=end)
+
+        if norm:
+            print(f" ({t_with_list/norm:4.1f} * Julia)")
 
 
 if __name__ == "__main__":

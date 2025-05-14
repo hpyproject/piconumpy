@@ -9,5 +9,10 @@ build
 
 **/tmp*.*
 **/tmp*.*
+**/tmp/*
 
 *_cython.c
+
+piconumpy/_piconumpy_hpy.py
+
+.venv*

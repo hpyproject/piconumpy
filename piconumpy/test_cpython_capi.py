@@ -6,6 +6,7 @@ from . import _piconumpy_cpython_capi
 
 class Tests:
     piconumpy = _piconumpy_cpython_capi
+
     def _array(self, *args):
         return self.piconumpy.array(*args)
 

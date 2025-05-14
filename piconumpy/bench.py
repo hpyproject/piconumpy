@@ -11,6 +11,13 @@ def timeit_verbose(
     print_time=False,
     max_length_name=33,
 ):
+    if name is None:
+        name = stmt.split("(")[0]
+
+    fmt_name = f"{{:{max_length_name}s}}"
+    name = fmt_name.format(name)
+    print(f"{name}:", end="", flush=True)
+
     result = timeit(
         stmt, setup=setup, total_duration=total_duration, globals=globals
     )
@@ -20,18 +27,12 @@ def timeit_verbose(
     else:
         norm_given = True
 
-    if name is None:
-        name = stmt.split("(")[0]
-
-    fmt_name = f"{{:{max_length_name}s}}"
-    name = fmt_name.format(name)
-
     if print_time:
         raw_time = f" = {result:7.3g} s"
     else:
         raw_time = ""
 
-    print(f"{name}: {result/norm:5.3g} * norm{raw_time}")
+    print(f" {result/norm:5.3g} * norm{raw_time}")
     if not norm_given and not print_time:
         print(f"norm = {norm:5.3g} s")
 

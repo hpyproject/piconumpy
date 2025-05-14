@@ -5,10 +5,12 @@ description = "An experiment about Numpy and pyhandle/hpy."
 authors = [
     {name = "Pierre Augier", email = "pierre.augier@univ-grenoble-alpes.fr"},
 ]
-license = {text = "BSD 3-Clause"}
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 readme = "README.md"
 keywords = ["numpy", "hpy", "PyPy"]
 requires-python = ">=3.8"
+dependencies = ["hpy>=0.9.0; implementation_name == 'cpython'"]
 
 [project.urls]
 homepage = "https://github.com/paugier/piconumpy"
@@ -16,15 +18,20 @@ repository = "https://github.com/paugier/piconumpy"
 documentation = "https://github.com/paugier/piconumpy"
 
 [project.optional-dependencies]
-dev = ['transonic', 'numpy', 'pytest', 'pythran']
-full = ['black']
+test = ["pytest", "numpy"]
+# pythran 0.18.0 needed but not yet on PyPI
+# (see https://github.com/serge-sans-paille/pythran/pull/2310#issuecomment-2871805768)
+bench = ['transonic', 'numpy', 'pythran@git+https://github.com/serge-sans-paille/pythran.git@0.18.0']
+profile = ["gprof2dot"]
+format = ['black']
+full = ["piconumpy[test,bench,profile,format]"]
 
 [build-system]
 requires = [
-    "setuptools >= 35.0.2",
+    "setuptools>=35.0.2",
     "wheel",
     "cython",
-    "hpy >= 0.9.0"
+    "hpy>=0.9.0; implementation_name == 'cpython'"
 ]
 
 [tool.black]

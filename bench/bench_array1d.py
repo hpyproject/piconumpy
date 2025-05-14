@@ -1,9 +1,14 @@
+import sys
+
 import numpy as np
 
 from numpy import array
 from math import pi, cos, sin
 
-from transonic import jit
+from transonic import jit, wait_for_all_extensions
+
+IS_CPY = sys.implementation.name == "cpython"
+IS_PYPY = sys.implementation.name == "pypy"
 
 # begin code functions (don't remove this line)
 
@@ -75,15 +80,15 @@ def bench(n_sleds, n_time):
 
 # end code functions (don't remove this line)
 
+if IS_CPY or IS_PYPY:
 
-bench_pythran = jit(bench)
-# Numba does not support this code...
-# bench_numba = jit(backend="numba")(bench)
-from transonic import wait_for_all_extensions
+    bench_pythran = jit(bench)
+    # Numba does not support this code...
+    # bench_numba = jit(backend="numba")(bench)
 
-# warmup (compilation of the Pythran extension)
-bench_pythran(1, 1)
-wait_for_all_extensions()
+    # warmup (compilation of the Pythran extension)
+    bench_pythran(1, 1)
+    wait_for_all_extensions()
 
 if __name__ == "__main__":
 
