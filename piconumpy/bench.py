@@ -32,7 +32,7 @@ def timeit_verbose(
     else:
         raw_time = ""
 
-    print(f"\r{name}: {result/norm:5.3g} * norm{raw_time}")
+    print(f" {result/norm:5.3g} * norm{raw_time}")
     if not norm_given and not print_time:
         print(f"norm = {norm:5.3g} s")
 
